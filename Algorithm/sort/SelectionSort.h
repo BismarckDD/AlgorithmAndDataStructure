@@ -8,27 +8,38 @@
 #ifndef _selection_sort_h_
 #define _selection_sort_h_
 
-template<typename TYPE>
-void SelectionSort(TYPE *arr, size_t n)
+#include "../../Common.hpp"
+
+namespace stdcs
 {
-    TYPE key;
-    for(size_t i=0, j, k; i <= n-2; ++i)
+
+template<class _RanIt, class _Comp>
+void SelectionSort(_RanIt p_begin, _RanIt p_end, const _Comp& p_comp)
+{
+    for (_RanIt i = p_begin, j, k; i < p_end - 1; ++i)
     {
-        key = arr[i];
+        auto key = *i;
         k = i;
-        for(j = i+1; j <= n-1; ++j)
-            if(arr[j] < key)
-            {
-                key = arr[j];
-                k = j;
-            }
-        if(k != i)
+        for(j = i + 1; j <= p_end - 1; ++j)
         {
-            arr[i] = arr[i]^arr[k];
-            arr[k] = arr[i]^arr[k];
-            arr[i] = arr[i]^arr[k];
+            p_comp(*j, key) ? key = *j, k = j : k = k ;
         }
+        if (k != i) stdcs::swap(*k, *i);
     }
+}
+
+template<class _RanIt>
+void SelectionSort(_RanIt p_begin, _RanIt p_end)
+{
+    SelectionSort(p_begin, p_end, Less());
+}
+
+template<class _RanIt>
+void SelectionSort(_RanIt p_begin, size_t p_cnt)
+{
+    SelectionSort(p_begin, p_begin + p_cnt);
+}
+
 }
 
 #endif

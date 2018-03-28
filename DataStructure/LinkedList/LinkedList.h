@@ -5,113 +5,116 @@
  > Created Time: 2014年10月02日 星期四 14时00分54秒
  ************************************************************************/
 
-#ifndef _LINKEDLIST_H_
-#define _LINKEDLIST_H_
+#ifndef _linked_list_h_
+#define _linked_list_h_
 
+#include"List.h"
 
 template<typename TYPE>
-class LinkedList
-{
-    template<typename TYPE>
-    struct LinkedNode
-    {
-        TYPE data;
-        LinkedNode *next;
-    };
-    
+class LinkedList : public List<TYPE>
+{ 
     public:
-        LinkedList()
+        LinkedList<TYPE>()
         {
             m_size = 0;
             m_head = NULL;
         }
         
-        LinkedList(TYPE& arr[])
+        LinkedList<TYPE>(TYPE arr[])
         {
             m_size = 0;
             m_head = Create(arr);
         }
 
-        ~LinkedList()
+        virtual ~LinkedList<TYPE>()
         { 
             Free(); 
         }
         
-        int size(){ return m_size; }
-        int length();
-        LinkedNode<TYPE>* Delete(TYPE& key);
-        LinkedNode<TYPE>* Insert(TYPE& key);
-        LinkedNode<TYPE>* Reverse();
-        void print() const;
-    private:
-        void Free();
-        LinkedNode<TYPE>* Create();
-        LinkedNode<TYPE>* m_head;
-        int m_size;
+        virtual size_t size() const { return m_size; }
+        virtual size_t length() const;
+        virtual bool remove(TYPE key);
+        virtual bool add(TYPE key);
+        virtual ListNode<TYPE>* find(TYPE );
+        virtual ListNode<TYPE>* reverse();
+        virtual void clear() { Free(); };
+        virtual void show() const;
+    protected:
+        virtual void Free();
+        ListNode<TYPE>* Create();
+        ListNode<TYPE> *m_head;
+        size_t m_size;
 };
 
 template<typename TYPE>
 void LinkedList<TYPE>::Free()
 {
-    LinkedNode<TYPE> *curr = m_head;
-    LinkedNode<TYPE> *prev = NULL;
-    while(curr!=NULL)
+    if (m_head == NULL)
+        return ;
+    ListNode<TYPE> *curr = m_head;
+    ListNode<TYPE> *prev = NULL;
+    while(curr != NULL)
     {
         prev = curr;
         curr = curr->next;
-        free(prev);
+        delete prev;
     }
+    prev = NULL;
+    curr = NULL;
     m_head = NULL;
+    m_size = 0;
 }
 
 template<typename TYPE>
-LinkedNode<TYPE> * LinkedList<TYPE>::Create()
+ListNode<TYPE> * LinkedList<TYPE>::Create()
 {
-    LinkedNode<TYPE> *head, *prev, *curr;
+    ListNode<TYPE> *head, *prev, *curr;
     TYPE data;
     if(cin >> data)
     {
-        head=(LinkedNode<TYPE> *)malloc(sizeof(LinkedNode<TYPE>));
+        head = new ListNode<TYPE>();
         head->data=data;
         prev=head;
-        ++this->m_size;
+        ++m_size;
     }
     else
         return NULL;
     while(cin>>data)
     {
-        curr=(LinkedNode<TYPE> *)malloc(sizeof(LinkedNode<TYPE>));
+        curr = new ListNode<TYPE>();
         curr->data=data;
         prev->next=curr;
         prev=curr;
-        ++this->m_size;
+        ++m_size;
     }
     prev->next = NULL;
     return head;
 }
 
 template<typename TYPE>
-LinkedNode<TYPE> * LinkedList<TYPE>::Insert(TYPE& key)
+bool LinkedList<TYPE>::add(TYPE key)
 {
-    LinkedNode<TYPE> *head = m_head, *prev, *curr=head, *next;
-    next = (LinkedNode<TYPE> *)malloc(sizeof(LinkedNode<TYPE>));
+    //cout << "add" << endl;
+    ListNode<TYPE> *head = m_head, *prev, *curr = m_head, *next;
+    next = new ListNode<TYPE>();
     next->data = key;
-    if(head = NULL)
+    if(head == NULL)
     {
         head = next;
         head->next = NULL;
+        ++m_size;
         m_head = head;
-        return head;
+        return true;
     }
-    while( (next->data > curr->data) && (curr->next!=NULL) )
+    while( (next->data > curr->data) && (curr->next != NULL) )
     {
         prev = curr;
         curr = curr->next;
     }
 
-    if(next->data<=curr->data)
+    if(next->data <= curr->data)
     {
-        if(curr==head)
+        if(curr == head)
         {
             head = next;
             next->next = curr;
@@ -127,39 +130,48 @@ LinkedNode<TYPE> * LinkedList<TYPE>::Insert(TYPE& key)
         curr->next = next;
         next->next = NULL;
     }
-    m_head=head;
-    return head;
+    ++m_size;
+    m_head = head;
+    return true;
 }
 template<typename TYPE>
-LinkedNode<TYPE> * LinkedList<TYPE>::Delete(TYPE num)
+bool LinkedList<TYPE>::remove(TYPE key)
 {
-    LinkedNode<TYPE> *head=this->m_head, *prev, *curr=head;
-    while(num!=prev->data&&curr->next!=NULL)
+    if(NULL == m_head) return NULL;
+    ListNode<TYPE> *head = m_head, *prev, *curr = m_head;
+    while(key != curr->data && curr->next != NULL)
     {
         prev = curr;
         curr = curr->next;
     }
-    if(num==curr->data)
+    if(key == curr->data)
     {
-        if(curr==head)
+        if(curr == head)
+        {
             head = head->next;
+            m_head = head;
+        }
         else
+        {
             prev->next = curr->next;
-        free(curr);
+        }
+        --m_size;
+        delete curr;
+        return true;
     }
     else
-        cout<<"没有找到"<<endl;
-    this->m_head = head;
-    return head;
+    {
+        return false;
+    }
 }
 
 
 template<typename TYPE>
-int LinkedList<TYPE>::length()
+size_t LinkedList<TYPE>::length() const
 {
-    int len = 0;
-    LinkedNode<TYPE> *p = this->m_head;
-    while(p!=NULL)
+    size_t len = 0;
+    ListNode<TYPE> *p = m_head;
+    while(p != NULL)
     {
         p = p->next;
         ++len;
@@ -168,12 +180,27 @@ int LinkedList<TYPE>::length()
 }
 
 template<typename TYPE>
-LinkedNode<TYPE> *LinkedList<TYPE>::Reverse()
+ListNode<TYPE> * LinkedList<TYPE>::find(TYPE key)
 {
-    LinkedNode<TYPE> *head = this->m_head;
-    if(head==NULL||head->next==NULL)
+    ListNode<TYPE> *head = m_head;
+    while(head)
+    {
+        if(head->data == key)
+        {
+            break;
+        }
+        head = head->next;
+    }
+    return head;
+}
+
+template<typename TYPE>
+ListNode<TYPE> *LinkedList<TYPE>::reverse()
+{
+    ListNode<TYPE> *head = m_head;
+    if(head == NULL || head->next == NULL)
         return head;
-    LinkedNode<TYPE> *prev, *curr, *next;
+    ListNode<TYPE> *prev, *curr, *next;
     prev = head;
     curr = head->next;
     while(curr)
@@ -185,18 +212,20 @@ LinkedNode<TYPE> *LinkedList<TYPE>::Reverse()
     }
     head->next = NULL;
     head = prev;
+    m_head = head;
     return head;
 }
 
 template<typename TYPE>
-void LinkedList<TYPE>::print() const
+void LinkedList<TYPE>::show() const
 {
-    LinkedNode<TYPE> *p = this->m_head;
-    while(p!=NULL)
+    ListNode<TYPE> *p = m_head;
+    while(p != NULL)
     {
-        printf("%d\n",p->data);
+        cout << p->data << ", ";
         p = p->next;
     }
+    cout << endl;
     
 }
 

@@ -8,28 +8,44 @@
 #ifndef _bubble_sort_h_
 #define _bubble_sort_h_
 
-template<typename TYPE>
-void BubbleSort(TYPE *arr, size_t n)
+#include "../../Common.hpp"
+
+namespace stdcs
+{
+
+template<class _RanIt, class _Comp>
+void BubbleSort(_RanIt p_begin, _RanIt p_end, const _Comp& p_comp)
 {
     bool flag;
-    for(size_t i = 0;i <= n-2; ++i)
+    for(_RanIt it = p_begin; it <= p_end - 2; ++it)
     {
         flag = false;
-        for(size_t j = n-1; j >= i+1; --j)
+        for(_RanIt jt = p_end - 1; jt >= it + 1; --jt)
         {
-            if(arr[j] < arr[j-1])
+            if (p_comp(*jt, *(jt-1)))
             {
-            //  int temp = arr[j];
-            //  arr[j] = arr[j-1];
-            //  arr[j-1] = temp;
-                arr[j]   = arr[j]^arr[j-1];
-                arr[j-1] = arr[j]^arr[j-1];
-                arr[j]   = arr[j]^arr[j-1];
+                *jt = (*jt) ^ *(jt-1);
+                *(jt-1) = (*jt) ^ *(jt-1);
+                *jt = (*jt) ^ *(jt-1);
                 flag = true;
             }
         }
         if(!flag) return ;
     }
+}
+
+template<class _RanIt>
+void BubbleSort(_RanIt p_begin, _RanIt p_end)
+{
+    BubbleSort(p_begin, p_end, Less());
+}
+
+template<class _RanIt>
+void BubbleSort(_RanIt p_begin, size_t p_cnt)
+{
+    BubbleSort(p_begin, p_begin + p_cnt);
+}
+
 }
 
 #endif
