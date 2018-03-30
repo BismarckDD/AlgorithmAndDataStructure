@@ -1,20 +1,38 @@
-#include<cstdio>
-#include<iostream>
 #include<algorithm>
+#include<iostream>
 #include<cstdlib>
-using namespace std;
+#include"HeapSort.h"
+//using namespace std;
 
-const int MAXN = 1000000;
+const int limit = 4000000;
+int arr[limit], base[limit];
+void generateBase(const int p_limit = limit)
+{
+    for (int i = 0; i < p_limit; ++i)
+        base[i] = i;
+    for (int i = 0, j; i < p_limit; ++i)
+    {
+        j = (rand() * 32767 + rand()) % (p_limit - i);
+        swap(base[i], base[i + j]);
+    }
+}
 
-int n,a[MAXN];
 int main()
 {
-    scanf("%d",&n);
-    for(int i=0;i<n;++i)
-	a[i]=rand();
-    sort(a,a+n);
-    for(int i=0;i<n;++i)
-	printf("%d ",a[i]);
-    printf("\n");
+
+    generateBase();
+    for (int i = 0; i < limit; ++i)
+        arr[i] = base[i];
+    HeapSort(arr, arr + limit);
+    for (int i = 0; i < limit - 1; ++i)
+        if (arr[i] > arr[i + 1])
+            printf("Error\n");
+    for (int i = 0; i < limit; ++i)
+        arr[i] = base[i];
+    HeapSort(arr, arr + limit, Greater());
+    for (int i = 0; i < limit - 1; ++i)
+        if (arr[i] < arr[i + 1])
+            printf("Error\n");
+    printf("OK\n");
     return 0;
 }

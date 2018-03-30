@@ -8,39 +8,63 @@
 #ifndef _merge_sort_h_
 #define _merge_sort_h_
 
-template<typename TYPE>
-void Merge(TYPE *arr, TYPE *temp, size_t l, size_t r)
+#include <Common.hpp>
+
+namespace stdcs
 {
-    size_t m = (l+r)>>1;
-    size_t i = l, j = m+1,k = l;
-    while(i <= m && j <= r)
+
+template<class _RanIt, class _Comp>
+void Merge(_RanIt p_begin, _RanIt p_mid, _RanIt p_end, _RanIt p_temp, const _Comp& p_comp)
+{
+    _RanIt st1 = p_begin, ed1 = p_mid, st2 = p_mid, ed2 = p_end, t = p_temp, s;
+    while (st1 < ed1 && st2 < ed2)
     {
-        if(arr[i] < arr[j]) temp[k++] = arr[i++];
-        else temp[k++] = arr[j++];
+        if (p_comp(*st1, *st2)) *t++ = *st1++;
+        else *t++ = *st2++;
     }
-    while(i <= m) temp[k++] = arr[i++];
-    while(j <= r) temp[k++] = arr[j++];
-    for(size_t i = l;i <= r;++i) arr[i] = temp[i];
+    while (st1 < ed1) *t++ = *st1++;
+    while (st2 < ed2) *t++ = *st2++;
+    size_t len = p_end - p_begin;
+    for (s = p_begin, t = p_temp; s < p_end;) *s++ = *t++;
 }
 
-template<typename TYPE>
-void MergeSort(TYPE *arr, TYPE *temp, size_t l, size_t r)
+template<class _RanIt, class _Comp>
+void MergeSort(_RanIt p_begin, _RanIt p_end, _RanIt p_temp, const _Comp& p_comp)
 {
-    if(l < r)
+    if(2 <= p_end - p_begin)
     {
-        size_t m = (l+r)>>1;
-        MergeSort(arr, temp, l, m);
-        MergeSort(arr, temp, m+1, r);
-        Merge(arr, temp, l, r);
+        size_t len = (p_end - p_begin);
+        _RanIt mid = p_begin + (len >> 1);
+        MergeSort(p_begin, mid, p_temp, p_comp);
+        MergeSort(mid, p_end, p_temp, p_comp);
+        Merge(p_begin, mid, p_end, p_temp, p_comp);
     }
 }
 
-template<typename TYPE>
-void MergeSort(TYPE *arr, size_t n)
+template<class _RanIt, class _Comp>
+void MergeSort(_RanIt p_begin, _RanIt p_end, const _Comp& p_comp)
 {
-    TYPE *temp = new TYPE[n];
-    MergeSort(arr, temp, 0, n-1);
-    delete temp;
+    if (p_begin >= p_end) return;
+    size_t len = p_end - p_begin;
+    typedef typename iterator_traits<_RanIt>::value_type ItType;
+    _RanIt temp = (_RanIt)new ItType[len];
+    // _RanIt temp = new _RanIt::value_type[len];
+    MergeSort(p_begin, p_end, temp, p_comp);
+    delete[] temp;
+}
+
+template<class _RanIt>
+void MergeSort(_RanIt p_begin, _RanIt p_end)
+{
+    MergeSort(p_begin, p_end, Less());
+}
+
+template<class _RanIt>
+void MergeSort(_RanIt p_begin, size_t p_cnt)
+{
+    MergeSort(p_begin, p_begin + p_cnt);
+}
+
 }
 
 #endif

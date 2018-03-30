@@ -8,38 +8,83 @@
 #ifndef _quick_sort_h_
 #define _quick_sort_h_
 
-template<typename TYPE>
-size_t partition(TYPE *arr, size_t l, size_t r)
-{
-    //size_t k = l+(rand()%(r-l));
-    TYPE key = arr[l];
-    size_t i = l, j = r;
-    while(i < j)
-    {   
-        while(i < j && arr[j] >= key) --j;
-        if(i < j) arr[i++] = arr[j];
-        while(i < j && arr[i] <= key) ++i;
-        if(i < j) arr[j--] = arr[i];
-    }
-    arr[i] = key;
-    return i;
-}
+#include <Common.hpp>
 
-template<typename TYPE>
-void QuickSort(TYPE *arr, size_t l, size_t r)
+namespace stdcs
 {
-    if(l < r)
+
+template<class _RanIt, class _Comp>
+_RanIt partition(_RanIt p_begin, _RanIt p_end, const _Comp& p_comp)
+{
+    auto key = *p_begin;
+    p_end = p_end - 1;
+    while(p_begin < p_end)
     {
-        size_t key = partition(arr, l, r);
-        QuickSort(arr, l, key==0?key:key-1);
-        QuickSort(arr, key+1, r);
+        while(p_begin < p_end && p_comp(key, *p_end)) p_end--;
+        if (p_begin < p_end) *p_begin = *p_end;
+        while(p_begin < p_end && p_comp(*p_begin, key)) p_begin++;
+        if (p_begin < p_end) *p_end = *p_begin;
+    }
+    *p_begin = key;
+    return p_begin;
+}
+
+template<class _RanIt, class _Comp>
+void QuickSort(_RanIt p_begin, _RanIt p_end, const _Comp& p_comp)
+{
+    if (2 <= p_end - p_begin)
+    {
+        _RanIt p_mid = partition(p_begin, p_end, p_comp);
+        QuickSort(p_begin, p_mid, p_comp);
+        QuickSort(p_mid + 1, p_end, p_comp);
     }
 }
 
-template<typename TYPE>
-void QuickSort(TYPE *arr, size_t n)
+template<class _RanIt>
+void QuickSort(_RanIt p_begin, _RanIt p_end)
 {
-    QuickSort(arr, 0, n-1);
+    QuickSort(p_begin, p_end, Less());
+}
+
+template<class _RanIt>
+void QuickSort(_RanIt p_begin, size_t p_cnt)
+{
+    QuickSort(p_begin, p_begin + p_cnt);
+}
+
+template<class _RanIt, class _Comp>
+void QuickSort3Way(_RanIt p_begin, _RanIt p_end, const _Comp& p_comp)
+{
+    if (2 <= p_end - p_begin)
+    {
+        auto pivot = *(p_end - 1);
+        _RanIt i = p_begin - 1, j = p_end, p = p_begin - 1, q = p_end;
+        while(i < j)
+        {
+            while (p_comp(*(++i), pivot)) {}
+            while (p_comp(pivot, *(--j))) { if(j == p_begin) break; }
+            if(i < j)
+            {
+                swap(*i, *j);
+                if (*i == pivot) {p++; swap(*p, *i);}
+                if (*j == pivot) {q--; swap(*q, *j);}
+            }
+        }
+        swap(*i, *(p_end-1)); j = i - 1; i = i + 1;
+        for (_RanIt k = p_begin; k <= p; k++, j--) swap(*k, *j);
+        for (_RanIt k = p_end - 1; k >= q; k--, i++) swap(*i, *k);
+
+        QuickSort3Way(p_begin, j, p_comp);
+        QuickSort3Way(i, p_end, p_comp);
+    }
+}
+
+template<class _RanIt>
+void QuickSort3Way(_RanIt p_begin, _RanIt p_end)
+{
+    QuickSort3Way(p_begin, p_end, Less());
+}
+
 }
 
 #endif
